@@ -1,0 +1,7 @@
+# for docker-compose postgres
+# need change this file to use production 
+export POSTGRES_USER="root"
+export POSTGRES_PASSWORD="root"
+export POSTGRES_PORT="5432"
+export POSTGRES_HOST="localhost"
+export POSTGRES_DB="weightrec"
