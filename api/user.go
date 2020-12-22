@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// User is user
+// User is user that have weight and bfp
 type User struct {
 	name                  string
 	weightData            map[recordedDate]float32
