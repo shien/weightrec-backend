@@ -1,4 +1,4 @@
-package config
+package dbcfg
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"github.com/joeshaw/envdecode"
 )
 
-// Config has DB informations for connection
-type Config struct {
+// DBConfig has DB informations for connection
+type DBConfig struct {
 	DbUser     string `env:"POSTGRES_USER,required"`
 	DbPassword string `env:"POSTGRES_PASSWORD,required"`
 	DbHost     string `env:"POSTGRES_HOST,default=localhost"`
@@ -16,9 +16,9 @@ type Config struct {
 	DbName     string `env:"POSTGRES_DB,required"`
 }
 
-// Get return App configuration
-func Get() *Config {
-	var conf Config
+// GetDBConfig return App configuration
+func GetDBConfig() *DBConfig {
+	var conf DBConfig
 
 	if err := envdecode.Decode(&conf); err != nil {
 		log.Fatalln(err)
@@ -28,11 +28,11 @@ func Get() *Config {
 }
 
 // GetDBConnStr return DB information for connection
-func (c *Config) GetDBConnStr() string {
+func (c *DBConfig) GetDBConnStr() string {
 	return c.getDBConnStr(c.DbHost, c.DbName)
 }
 
-func (c *Config) getDBConnStr(dbhost, dbname string) string {
+func (c *DBConfig) getDBConnStr(dbhost, dbname string) string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		c.DbUser,

@@ -1,10 +1,10 @@
-package main
+package user
 
 import (
 	"time"
 
-	"github.com/shien/weightrec-backend/pkg/config"
 	"github.com/shien/weightrec-backend/pkg/db"
+	"github.com/shien/weightrec-backend/pkg/dbcfg"
 )
 
 type UserRepo struct {
@@ -13,8 +13,8 @@ type UserRepo struct {
 
 func Init() *UserRepo {
 
-	con := config.Get()
-	dbconf := con.GetDBConnStr()
+	conf := dbcfg.GetDBConfig()
+	dbconf := conf.GetDBConnStr()
 
 	d, err := db.NewClient(dbconf)
 	ur := &UserRepo{
@@ -27,8 +27,9 @@ func Init() *UserRepo {
 	return ur
 }
 
+// Close close DB
 func (ur *UserRepo) Close() {
-	ur.Close()
+	ur.DB.Close()
 }
 
 func (ur *UserRepo) AddUser(userName string) error {

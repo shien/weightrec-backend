@@ -7,22 +7,36 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shien/weightrec-backend/pkg/auth"
+	"github.com/shien/weightrec-backend/pkg/user"
 )
 
 func main() {
 
-	ur := Init()
+	ur := user.Init()
 	defer ur.Close()
-
 	if err := ur.AddUser("testuser"); err != nil {
 		log.Println(err)
 	}
+
+	url, err := auth.GetLoginURL()
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(url)
 
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
+	})
+
+	r.GET("/login", func(c *gin.Context) {
+		name := c.Param("name")
+		action := c.Param("action")
+		message := name + " is " + action
+		c.String(http.StatusOK, message)
 	})
 
 	r.GET("/user/:id/*action", func(c *gin.Context) {
