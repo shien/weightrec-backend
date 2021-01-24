@@ -19,12 +19,6 @@ func main() {
 		log.Println(err)
 	}
 
-	url, err := auth.GetLoginURL()
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(url)
-
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -32,11 +26,28 @@ func main() {
 		})
 	})
 
-	r.GET("/login", func(c *gin.Context) {
-		name := c.Param("name")
-		action := c.Param("action")
-		message := name + " is " + action
-		c.String(http.StatusOK, message)
+	r.GET("/", func(c *gin.Context) {
+		code := c.Query("code")
+		c.JSON(200, gin.H{
+			"message": code,
+		})
+	})
+
+	r.GET("/api/login", func(c *gin.Context) {
+		url, err := auth.GetLoginURL()
+		if err != nil {
+			log.Println(err)
+		}
+		c.Redirect(http.StatusSeeOther, url)
+	})
+
+	r.GET("/api/callback", func(c *gin.Context) {
+		url, err := auth.GetLoginURL()
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println(url)
+		c.Redirect(http.StatusSeeOther, url)
 	})
 
 	r.GET("/user/:id/*action", func(c *gin.Context) {

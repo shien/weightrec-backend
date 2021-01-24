@@ -5,7 +5,8 @@ create database weightrec;
 create schema users;
 create table users.users (
     id uuid primary key default gen_random_uuid(),
-    name  varchar(100)
+    name  varchar(100),
+    mailaddress varchar(100)
 );
 
 create schema logs;

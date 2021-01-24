@@ -6,7 +6,12 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func GetLoginURL() (string, error) {
+type AuthInfo struct {
+	AuthConfig oauth2.Config
+	LoginURL   string
+}
+
+func InitAuthConf() (string, error) {
 	conf := authcfg.GetCredConf()
 	oauth2conf := &oauth2.Config{
 		ClientID:     conf.ClientID,
@@ -19,4 +24,8 @@ func GetLoginURL() (string, error) {
 	}
 	url := oauth2conf.AuthCodeURL("state")
 	return url, nil
+}
+
+func CallBack() string {
+	return ""
 }
