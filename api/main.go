@@ -8,7 +8,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/shien/weightrec-backend/pkg/auth"
+	"github.com/shien/weightrec-backend/pkg/globalcfg"
 	"github.com/shien/weightrec-backend/pkg/user"
+)
+
+const (
+	cookieUserInfo = "UserInfo"
 )
 
 func main() {
@@ -20,6 +25,8 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.LoadHTMLGlob("templates/*")
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -27,27 +34,61 @@ func main() {
 	})
 
 	r.GET("/", func(c *gin.Context) {
-		code := c.Query("code")
-		c.JSON(200, gin.H{
-			"message": code,
+		userinfo, err := c.Cookie(cookieUserInfo)
+		name := ""
+		if err != nil {
+			name = "My Account"
+		} else {
+			// User name is mail address
+			name, err = auth.GetMailAddress(userinfo)
+			if err != nil {
+				log.Println("Failed to get mail address:", err)
+				name = "My Account"
+			}
+		}
+		log.Println(name)
+
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title":       "WeightRec",
+			"mailAddress": name,
 		})
 	})
 
-	r.GET("/api/login", func(c *gin.Context) {
-		url, err := auth.GetLoginURL()
-		if err != nil {
-			log.Println(err)
+	r.GET("/login", func(c *gin.Context) {
+		userinfo, err := c.Cookie(cookieUserInfo)
+		if err != nil || userinfo != "" {
+			c.HTML(http.StatusOK, "login.tmpl", gin.H{
+				"title": "WeightRec Login",
+			})
 		}
+		c.Redirect(http.StatusSeeOther, "/")
+	})
+
+	r.GET("/logout", func(c *gin.Context) {
+		domain := globalcfg.GetDomain()
+		c.SetCookie(cookieUserInfo, "", -1, "/", domain, false, true)
+		c.Redirect(http.StatusSeeOther, "/")
+	})
+
+	r.GET("/api/login", func(c *gin.Context) {
+		url := auth.GetLoginURL()
 		c.Redirect(http.StatusSeeOther, url)
 	})
 
 	r.GET("/api/callback", func(c *gin.Context) {
-		url, err := auth.GetLoginURL()
+
+		code := c.Query("code")
+		userinfo, err := auth.GetUserInfo(code)
 		if err != nil {
-			log.Println(err)
+			c.HTML(http.StatusInternalServerError, "503.tmpl", gin.H{
+				"title": "Internal Server Error",
+			})
 		}
-		log.Println(url)
-		c.Redirect(http.StatusSeeOther, url)
+
+		domain := globalcfg.GetDomain()
+		c.SetCookie(cookieUserInfo, userinfo, 3600, "/", domain, false, true)
+
+		c.Redirect(http.StatusSeeOther, "/")
 	})
 
 	r.GET("/user/:id/*action", func(c *gin.Context) {
