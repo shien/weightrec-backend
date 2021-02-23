@@ -33,10 +33,36 @@ func main() {
 		})
 	})
 
+	r.GET("/graphs", func(c *gin.Context) {
+		userinfo, err := c.Cookie(cookieUserInfo)
+		if err != nil {
+			c.HTML(http.StatusOK, "graphs.tmpl", gin.H{
+				"title":       "WeightRec",
+				"mailAddress": "My Account",
+				"authstatus":  false,
+			})
+		} else {
+			// User name is mail address
+			name, err := auth.GetMailAddress(userinfo)
+			authstatus := false
+			if err != nil {
+				log.Println("Failed to get mail address:", err)
+				name = "My Account"
+			} else {
+				authstatus = true
+			}
+			c.HTML(http.StatusOK, "graphs.tmpl", gin.H{
+				"title":       "WeightRec",
+				"mailAddress": name,
+				"authstatus":  authstatus,
+			})
+		}
+	})
+
 	r.GET("/", func(c *gin.Context) {
 		userinfo, err := c.Cookie(cookieUserInfo)
 		if err != nil {
-			c.HTML(http.StatusUnauthorized, "index.tmpl", gin.H{
+			c.HTML(http.StatusOK, "index.tmpl", gin.H{
 				"title":       "WeightRec",
 				"mailAddress": "My Account",
 				"authstatus":  false,
