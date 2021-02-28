@@ -41,15 +41,25 @@ func (d *DB) Close() error {
 // ReadUserLog read log from db
 func (d *DB) SelectUserWeight(id string, recordedDate time.Time) (float32, error) {
 	var weight float32 = 0.0
-	err := d.Client.QueryRow("select * from users where id = $2 and recorded_time = $2", id, recordedDate).Scan(&weight)
+	err := d.Client.QueryRow("select * from users.users where id = $2 and recorded_time = $2", id, recordedDate).Scan(&weight)
 	if err != nil {
 		return 0.0, err
 	}
 	return weight, nil
 }
 
-func (d *DB) InsertUser(userName string) error {
-	_, err := d.Client.ExecContext(context.Background(), "insert into users.users (name) values ($1)", userName)
+// SelectUser read user from db
+func (d *DB) SelectUser(mailAddress string) (string, error) {
+	var user string = ""
+	err := d.Client.QueryRow("select mail_address from users.users where mail_address = $1", mailAddress).Scan(&user)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (d *DB) InsertUser(mailAddress string) error {
+	_, err := d.Client.ExecContext(context.Background(), "insert into users.users (mail_address) values ($1)", mailAddress)
 	if err != nil {
 		return err
 	}

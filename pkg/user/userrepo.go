@@ -7,10 +7,12 @@ import (
 	"github.com/shien/weightrec-backend/pkg/dbcfg"
 )
 
+// UserRepo has user data
 type UserRepo struct {
 	DB *db.DB
 }
 
+// Init initialize user repository
 func Init() *UserRepo {
 
 	conf := dbcfg.GetDBConfig()
@@ -32,12 +34,24 @@ func (ur *UserRepo) Close() {
 	ur.DB.Close()
 }
 
-func (ur *UserRepo) AddUser(userName string) error {
-	err := ur.DB.InsertUser(userName)
+func (ur *UserRepo) AddUser(mailAddress string) error {
+	err := ur.DB.InsertUser(mailAddress)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// IsUserExists exists user had mail address
+func (ur *UserRepo) IsUserExists(mailAddress string) (bool, error) {
+	result, err := ur.DB.SelectUser(mailAddress)
+	if err != nil {
+		return false, err
+	}
+	if result != mailAddress {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (ur *UserRepo) ReadUserWeight(userid string, recordedDate time.Time) (float32, error) {
