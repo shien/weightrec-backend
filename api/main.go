@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
@@ -52,6 +53,32 @@ func main() {
 				authstatus = true
 			}
 			c.HTML(http.StatusOK, "graphs.tmpl", gin.H{
+				"title":       "WeightRec",
+				"mailAddress": name,
+				"authstatus":  authstatus,
+			})
+		}
+	})
+
+	r.GET("/upload", func(c *gin.Context) {
+		userinfo, err := c.Cookie(cookieUserInfo)
+		if err != nil {
+			c.HTML(http.StatusOK, "upload.tmpl", gin.H{
+				"title":       "WeightRec",
+				"mailAddress": "My Account",
+				"authstatus":  false,
+			})
+		} else {
+			// User name is mail address
+			name, err := auth.GetMailAddress(userinfo)
+			authstatus := false
+			if err != nil {
+				log.Println("Failed to get mail address:", err)
+				name = "My Account"
+			} else {
+				authstatus = true
+			}
+			c.HTML(http.StatusOK, "upload.tmpl", gin.H{
 				"title":       "WeightRec",
 				"mailAddress": name,
 				"authstatus":  authstatus,
@@ -111,7 +138,7 @@ func main() {
 		code := c.Query("code")
 		userinfo, err := auth.GetUserInfo(code)
 		if err != nil {
-			c.HTML(http.StatusInternalServerError, "503.tmpl", gin.H{
+			c.HTML(http.StatusInternalServerError, "internalservererror.tmpl", gin.H{
 				"title": "Internal Server Error",
 			})
 		}
@@ -120,6 +147,24 @@ func main() {
 		c.SetCookie(cookieUserInfo, userinfo, 3600, "/", domain, false, true)
 
 		c.Redirect(http.StatusSeeOther, "/")
+	})
+
+	r.POST("/api/upload", func(c *gin.Context) {
+		file, _, err := c.Request.FormFile("csv")
+		if err != nil {
+			log.Println("FormFile ", err)
+			c.String(http.StatusBadRequest, "Bad Request")
+			return
+		}
+
+		csvr := csv.NewReader(file)
+		data, err := csvr.ReadAll()
+		if err != nil {
+			log.Println("Read All ", err)
+			c.String(http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+		log.Println(data)
 	})
 
 	r.GET("/user/:id/*action", func(c *gin.Context) {
