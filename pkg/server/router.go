@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/shien/weightrec-backend/pkg/auth"
+	"github.com/shien/weightrec-backend/pkg/csvparser"
 	"github.com/shien/weightrec-backend/pkg/globalcfg"
 )
 
@@ -140,14 +140,13 @@ func NewRouter() *gin.Engine {
 			return
 		}
 
-		csvr := csv.NewReader(file)
-		data, err := csvr.ReadAll()
+		_, err = csvparser.Parse(file)
 		if err != nil {
-			log.Println("Read All ", err)
-			c.String(http.StatusInternalServerError, "Internal Server Error")
+			log.Println("Parse Error ", err)
+			c.String(http.StatusBadRequest, "Bad Request")
 			return
 		}
-		log.Println(data)
+
 	})
 
 	router.GET("/user/:id/*action", func(c *gin.Context) {
