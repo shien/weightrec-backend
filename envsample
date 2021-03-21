@@ -5,3 +5,9 @@ export POSTGRES_PASSWORD="root"
 export POSTGRES_PORT="5432"
 export POSTGRES_HOST="localhost"
 export POSTGRES_DB="weightrec"
+# google API Client ID
+export CLIENT_ID=""
+# google API Client Secret
+export CLIENT_SECRET=""
+export REDIRECT_URL="http://localhost:8080/api/callback"
+export DOMAIN="localhost"
